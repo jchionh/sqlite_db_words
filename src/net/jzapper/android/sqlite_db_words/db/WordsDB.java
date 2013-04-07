@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import net.jzapper.android.sqlite_db_words.model.Word;
+import net.jzapper.android.sqlite_db_words.model.WordsReader;
+
+import java.io.InputStream;
 
 /**
  * User: jchionh
@@ -23,6 +26,8 @@ public class WordsDB extends SQLiteOpenHelper {
 
     private static final String DATABASE_FILENAME = "words.db";
     private static final int DATABASE_VERSION = 1;
+
+    private static final int RECORD_COUNT_REFERENCE = 19223;
 
     private static final String DATABASE_CREATE =
             "CREATE TABLE " +
@@ -71,6 +76,18 @@ public class WordsDB extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
+    public void checkAndPopulate(InputStream wordsStream) {
+        int count = countRecords();
+        if (count != RECORD_COUNT_REFERENCE) {
+            Log.d(TAG, "Db not populated, populating now.");
+            deleteAllRows();
+            WordsReader wordsReader = new WordsReader(wordsStream);
+            wordsReader.scanAndPopulateDb(this);
+        } else {
+            Log.d(TAG, "Db populated with words, no need to populate.");
+        }
+    }
+
     /**
      * add a word to the database
      * @param word
@@ -94,8 +111,10 @@ public class WordsDB extends SQLiteOpenHelper {
         return count;
     }
 
-    public void init() {
+
+    private void deleteAllRows() {
         SQLiteDatabase db = this.getWritableDatabase();
-        //db.close();
+        db.delete(TABLE_WORDS, null, null);
+        db.close();
     }
 }
