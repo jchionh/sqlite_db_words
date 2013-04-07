@@ -1,4 +1,4 @@
-package com.example.sqlite_db_words;
+package net.jzapper.android.sqlite_db_words;
 
 import android.app.Activity;
 import android.os.Bundle;
